@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+	
+	<!-- UserMapper 설정 -->
+		<!-- MapperScannerConfigurer 설정 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="myspring.user.dao.mapper"/>
+		<property name="annotationClass" value="org.apache.ibatis.annotations.Mapper" /> 
+	</bean>
+
+<!-- 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"> -->
+<!-- 		<property name="basePackage" value="myspring.user.dao.mapper"/> -->
+<!-- 		<property name="annotationClass" value="myspring.user.dao.mapper.MyMapper" />  -->
+<!-- 	</bean> -->
+
+	<!-- Mapper 설정 -->
+<!-- 	<bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean"> -->
+<!-- 		<property name="mapperInterface" value="myspring.user.dao.mapper.UserMapper" /> -->
+<!-- 		<property name="sqlSessionTemplate" ref="sqlSession" /> -->
+<!-- 	</bean> -->
+	
+	<!-- SqlSessionTemplate 클래스를 Bean으로 등록 -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<!-- SqlSessionFactoryBean 클래스를 Bean 으로 등록 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:config/SqlMapConfig.xml" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:config/*Mapper.xml</value>
+<!-- 				<value>classpath:config/StudentMapper.xml</value> -->
+			</list>
+		</property>		
+	</bean>
+	
+	<!-- BasicDataSource Bean으로 등록 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="${db.driverClass}" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+	</bean>
+	
+	<!-- Properties file 정보 설정 -->
+	<context:property-placeholder location="classpath:config/values.properties" />
+	
+	<!-- Component Auto Scanning을 위한 설정 -->
+	<context:component-scan base-package="myspring.di.annotation,myspring.user">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+
+	<!-- StringPrinter 클래스를 Bean으로 등록 -->
+	<bean id="strPrinter" class="myspring.di.xml.StringPrinter" />
+	
+	<!-- ConsolePrinter 클래스를 Bean으로 등록 -->
+	<bean id="conPrinter" class="myspring.di.xml.ConsolePrinter" />
+	
+	<!-- Hello 클래스를 Bean으로 등록 -->
+	<!-- scope : singleton, prototype, request, session -->
+		
+	<bean id="hello" class="myspring.di.xml.Hello" scope="singleton">
+		<!-- setter injection 설정 -->
+		<!-- setName("스프링") -->
+		<property name="name" value="스프링" />
+		<!-- setPrinter(new StringPrinter()) -->
+		<property name="printer" ref="strPrinter" />
+	</bean>
+	
+	<!-- No constructor with 0 arguments defined in class 'myspring.di.xml.Hello' -->	
+	<bean id="helloC" class="myspring.di.xml.Hello">
+		<!-- constructor injection 설정 -->
+		<constructor-arg index="0" value="생성자" />
+		<constructor-arg index="1" ref="conPrinter" />
+	</bean>
+	
+</beans>
